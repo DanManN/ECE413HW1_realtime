@@ -13,12 +13,12 @@ constants.QueueDuration                = 0.1;                                   
 constants.TimePerBuffer                = constants.BufferSize / constants.SamplingRate;          % Seconds;
 
 oscParams                              =confOsc;
-oscParams.oscType                      = 'sine';
+oscParams.oscType                      = 'waveshaping';
 oscParams.oscAmpEnv.StartPoint         = 0;
 oscParams.oscAmpEnv.ReleasePoint       = Inf;   % Time to release the note
 oscParams.oscAmpEnv.AttackTime         = .02;  %Attack time in seconds
 oscParams.oscAmpEnv.DecayTime          = .01;  %Decay time in seconds
-oscParams.oscAmpEnv.SustainLevel       = 0.7;  % Sustain level
+oscParams.oscAmpEnv.SustainLevel       = .7;  % Sustain level
 oscParams.oscAmpEnv.ReleaseTime        = .05;  % Time to release from sustain to zero
 
 
