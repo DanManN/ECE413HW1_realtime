@@ -1,7 +1,7 @@
 % This is a simple test script to demonstrate all parts of HW #1
 
 close all                                                                               % Close all open windows
-clear classes                                                                           % Clear the objects in memory
+clear all                                                                               % Clear the objects in memory
 format compact                                                                          % reduce white space
 dbstop if error                                                                         % add dynamic break point
 
