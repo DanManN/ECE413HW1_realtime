@@ -3,7 +3,7 @@
 classdef objTrack
     properties
         % These are the inputs that must be provided
-        scaleType                                                           % major or minor
+%        scaleType                                                           % major or minor
         temperament                 = 'equal'                               % Default to equal temperament
         key                         = 'C'                                   % Default to key of C
         tempo                       = 500000
@@ -21,12 +21,11 @@ classdef objTrack
             
             % Map the variable inputs to the class
             if nargin >= 4
-                obj.key=varargin{5};
+                obj.key=varargin{4};
             end
             if nargin >= 3
-                obj.temperament=varargin{4};
+                obj.temperament=varargin{3};
             end
-            obj.scaleType=varargin{3};
             ppqn = varargin{2};
             RAW = varargin{1};
             

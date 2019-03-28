@@ -13,7 +13,7 @@ constants.QueueDuration                = 0.1;                                   
 constants.TimePerBuffer                = constants.BufferSize / constants.SamplingRate;          % Seconds;
 
 oscParams                              =confOsc;
-oscParams.oscType                      = 'fm';
+oscParams.oscType                      = 'sine';
 oscParams.oscAmpEnv.StartPoint         = 0;
 oscParams.oscAmpEnv.ReleasePoint       = Inf;   % Time to release the note
 oscParams.oscAmpEnv.AttackTime         = .02;  %Attack time in seconds
@@ -21,10 +21,10 @@ oscParams.oscAmpEnv.DecayTime          = .01;  %Decay time in seconds
 oscParams.oscAmpEnv.SustainLevel       = .7;  % Sustain level
 oscParams.oscAmpEnv.ReleaseTime        = .05;  % Time to release from sustain to zero
 
+midiFile                               = 'mario.mid'
+
 
 % Play the scales
-
-
 majorScaleJust=objScale('major',60,'just','C',120);
 tmp=playAudio(majorScaleJust,oscParams,constants);
 
@@ -51,3 +51,23 @@ playAudio(majorChordJust,oscParams,constants);
 minorChordEqual=objChord('minor',60,'equal','C',120);
 playAudio(majorChordEqual,oscParams,constants);
 
+% Play a MIDI file
+midi = objMIDI(midiFile)
+switch midi.fileformat
+    case {0}
+        playAudio(midi.tracks(1).notesArray,oscParams,constants);
+    case {1}
+        notesArray = objNote.empty;
+        c = 0;
+        for track = midi.tracks
+            for note = track.noteArray
+                c = c + 1
+                notesArray(c) = note;
+            end
+        end
+        playAudio(notesArray,oscParams,constants);
+    case {2}
+        for track = midi.tracks
+            playAudio(track.notesArray,oscParams,constants);
+        end
+end

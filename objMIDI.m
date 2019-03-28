@@ -3,7 +3,7 @@
 classdef objMIDI
     properties
         % These are the inputs that must be provided
-        scaleType                                                           % major or minor
+%        scaleType                                                           % major or minor
         temperament                 = 'equal'                               % Default to equal temperament
         key                         = 'C'                                   % Default to key of C
 
@@ -18,14 +18,12 @@ classdef objMIDI
         function obj = objMIDI(varargin)
             
             % Map the variable inputs to the class
-            if nargin >= 4
-                obj.key=varargin{4};
-            end
             if nargin >= 3
-                obj.temperament=varargin{3};
+                obj.key=varargin{3};
             end
-            obj.scaleType=varargin{2};
-            
+            if nargin >= 2
+                obj.temperament=varargin{2};
+            end            
             fid = fopen(varargin{1});
             [RAW ~] = fread(fid,'uint8');
             fclose(fid);
@@ -66,7 +64,7 @@ classdef objMIDI
             
             obj.tracks = cell(1,obj.num_tracks);
             for i=1:obj.num_tracks
-                obj.tracks{i} = objTrack(raw_track{i},obj.ppqn,obj.scaleType,obj.temperament,obj.key); 
+                obj.tracks{i} = objTrack(raw_track{i},obj.ppqn,obj.temperament,obj.key); 
             end
             
         end
