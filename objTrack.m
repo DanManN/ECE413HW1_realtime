@@ -26,7 +26,7 @@ classdef objTrack
             if nargin >= 3
                 obj.temperament=varargin{3};
             end
-            ppqn = varargin{2};
+            obj.ppqn = varargin{2};
             RAW = varargin{1};
             
             obj.secondsPerQuarterNote  = obj.tempo*1e-6;                       
@@ -40,17 +40,17 @@ classdef objTrack
             currcmd = 'FF';
             notes = containers.Map('KeyType', 'uint32', 'ValueType', 'any');
             naind = 1;
-            while (tptr < length(RAW))
-                [dtime,tptr] = parse_var_len(track, tptr);
+            while (tptr < length(RAW)-1)
+                [dtime,tptr] = parse_varLen(RAW, tptr);
                 timecurr = timecurr + dtime;
                 seconds = seconds + dtime*1e-6*obj.tempo/obj.ppqn;
                 % META EVENTS
-                if track(tptr) == hex2dec('FF')
-                    tptr = tptr+1
-                    type = track(tptr);
+                if RAW(tptr) == hex2dec('FF')
                     tptr = tptr+1;
-                    [len,tptr] = parse_var_len(track, tptr);
-                    data = track(tptr:tptr+len-1);
+                    type = RAW(tptr);
+                    tptr = tptr+1;
+                    [len,tptr] = parse_varLen(RAW, tptr);
+                    data = RAW(tptr:tptr+len-1);
                     tptr = tptr + len;
                     switch dec2hex(type)
                         case {'04'} % instrument
@@ -64,49 +64,59 @@ classdef objTrack
                         case {'59'} % key
                         	keylookup = {'B','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'};
                             obj.key = keylookup{8+mvl2dec(dec2mvl(data(1)),true)};
-                            scale = ['major';'minor'];
-                            obj.scaleType = scale(data(2)+1,:);
+                            %scale = ['major';'minor'];
+                            %obj.scaleType = scale(data(2)+1,:);
                     end
                 else 
                 % MIDI EVENTS
 
-                    if track(tptr)>=128
-                        currcmd = dec2hex(track(tptr))
+                    if RAW(tptr)>=128
+                        currcmd = dec2hex(RAW(tptr));
                     end
 
                     switch currcmd(1)
-                        case dec2hex(bin2dec('1001')) %Note On
+                        case {dec2hex(bin2dec('1001'))} %Note On
                             tptr = tptr + 1;
-                            noteNum = track(tptr);
+                            noteNum = RAW(tptr);
                             tptr = tptr + 1;
+                            velocity = RAW(tptr);
                             if notes.isKey(noteNum)
                                 note = notes(noteNum);
-                            else
-                                note.start = seconds
-                            end
-                            velocity = track(tptr);
-                            if velocity == 0
-                                obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
-                                naind = naind + 1;
                             else
                                 note.start = seconds;
                                 note.velocity = velocity;
                             end
+                            if velocity == 0
+                                obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
+                                naind = naind + 1;
+                                notes.remove(noteNum);
+                            else
+                                note.velocity = velocity;
+                                notes(noteNum) = note;
+                            end
                             tptr = tptr + 1;
-                        case dec2hex(bin2dec('1000')) %Note off
+                        case {dec2hex(bin2dec('1000'))} %Note off
                             tptr = tptr + 1;
-                            noteNum = track(tptr);
+                            noteNum = RAW(tptr);
                             tptr = tptr + 1;
                             if notes.isKey(noteNum)
                                 note = notes(noteNum);
                                 obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
                                 naind = naind + 1;
+                                notes.remove(noteNum);
                             end
                             tptr = tptr + 1;
-                        otherwise
-                            while track(tptr)<128
-                               tptr = tptr + 1; 
+                        case {dec2hex(bin2dec('1010')),dec2hex(bin2dec('1011')),dec2hex(bin2dec('1110'))}
+                            tptr = tptr + 3;
+                        case {dec2hex(bin2dec('1101')),dec2hex(bin2dec('1100'))}
+                            tptr = tptr + 2;
+                        case {dec2hex(bin2dec('1111'))}
+                            tpte = tptr + 1;
+                            while tptr < length(RAW) && RAW(tptr-1) ~= hex2dec('F7')
+                               tptr = tptr + 1;
                             end
+                        otherwise
+                            error("Nope!");
                     end
                 end
             end

@@ -11,7 +11,7 @@ classdef objMIDI
         fileformat
         num_tracks
         ppqn                                                                % Pulses per quarter note
-        tracks                                                              % Cell Array of Tracks
+        tracks                      = objTrack.empty                        % Array of Tracks
     end
     
     methods
@@ -34,8 +34,8 @@ classdef objMIDI
                 error('No header!');
             end
 
-            header_len = parse_int(RAW(5:8))
-            format = parse_int(RAW(9:10))
+            header_len = parse_int(RAW(5:8));
+            format = parse_int(RAW(9:10));
             if sum(format==[0 1 2])
                  obj.fileformat = format;
             else    
@@ -62,9 +62,8 @@ classdef objMIDI
               tptr = tptr+track_len;
             end
             
-            obj.tracks = cell(1,obj.num_tracks);
             for i=1:obj.num_tracks
-                obj.tracks{i} = objTrack(raw_track{i},obj.ppqn,obj.temperament,obj.key); 
+                obj.tracks(i) = objTrack(raw_track{i},obj.ppqn,obj.temperament,obj.key); 
             end
             
         end

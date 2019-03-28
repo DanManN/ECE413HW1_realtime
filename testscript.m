@@ -21,53 +21,55 @@ oscParams.oscAmpEnv.DecayTime          = .01;  %Decay time in seconds
 oscParams.oscAmpEnv.SustainLevel       = .7;  % Sustain level
 oscParams.oscAmpEnv.ReleaseTime        = .05;  % Time to release from sustain to zero
 
-midiFile                               = 'mario.mid'
+midiFile                               = 'furelise.mid'
 
 
 % Play the scales
-majorScaleJust=objScale('major',60,'just','C',120);
-tmp=playAudio(majorScaleJust,oscParams,constants);
-
-majorScaleEqual=objScale('major',60,'equal','C',120);
-playAudio(majorScaleEqual,oscParams,constants);
-
-minorScaleJust=objScale('minor',60,'just','C',120);
-playAudio(minorScaleJust,oscParams,constants);
-
-minorScaleEqual=objScale('minor',60,'equal','C',120);
-playAudio(minorScaleEqual,oscParams,constants);
-
-
-% Play the chords
-majorChordJust=objChord('major',60,'just','C',120);
-playAudio(majorChordJust,oscParams,constants);
-%
-majorChordEqual=objChord('major',60,'equal','C',120);
-playAudio(majorChordEqual,oscParams,constants);
-%
-minorChordJust=objChord('minor',60,'just','C',120);
-playAudio(majorChordJust,oscParams,constants);
-
-minorChordEqual=objChord('minor',60,'equal','C',120);
-playAudio(majorChordEqual,oscParams,constants);
+%majorScaleJust=objScale('major',60,'just','C',120);
+%tmp=playAudio(majorScaleJust,oscParams,constants);
+% 
+% majorScaleEqual=objScale('major',60,'equal','C',120);
+% playAudio(majorScaleEqual,oscParams,constants);
+% 
+% minorScaleJust=objScale('minor',60,'just','C',120);
+% playAudio(minorScaleJust,oscParams,constants);
+% 
+% minorScaleEqual=objScale('minor',60,'equal','C',120);
+% playAudio(minorScaleEqual,oscParams,constants);
+% 
+% 
+% % Play the chords
+% majorChordJust=objChord('major',60,'just','C',120);
+% playAudio(majorChordJust,oscParams,constants);
+% %
+% majorChordEqual=objChord('major',60,'equal','C',120);
+% playAudio(majorChordEqual,oscParams,constants);
+% %
+% minorChordJust=objChord('minor',60,'just','C',120);
+% playAudio(majorChordJust,oscParams,constants);
+% 
+% minorChordEqual=objChord('minor',60,'equal','C',120);
+% playAudio(majorChordEqual,oscParams,constants);
 
 % Play a MIDI file
-midi = objMIDI(midiFile)
+midi = objMIDI(midiFile);
 switch midi.fileformat
     case {0}
-        playAudio(midi.tracks(1).notesArray,oscParams,constants);
+        playAudio(midi.tracks(1).arrayNotes,oscParams,constants);
     case {1}
-        notesArray = objNote.empty;
+        toplay.arrayNotes = objNote.empty;
         c = 0;
-        for track = midi.tracks
-            for note = track.noteArray
-                c = c + 1
-                notesArray(c) = note;
+        for ii = 1:midi.num_tracks
+            trak = midi.tracks(ii);
+            for jj = 1:length(trak.arrayNotes)
+                c = c + 1;
+                toplay.arrayNotes(c) = trak.arrayNotes(jj);
             end
         end
-        playAudio(notesArray,oscParams,constants);
+        playAudio(toplay,oscParams,constants);
     case {2}
-        for track = midi.tracks
-            playAudio(track.notesArray,oscParams,constants);
+        for ii = 1:midi.num_tracks
+            trak = midi.tracks(ii);
+            playAudio(trak,oscParams,constants);
         end
 end

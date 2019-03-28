@@ -6,5 +6,5 @@ function [ret,ptr] = parse_varLen(arr, ptr)
       ptr = ptr+1;
     end
     ret = ret*128 + bitand(arr(ptr),127);
-
+    ptr = ptr+1;
 end
