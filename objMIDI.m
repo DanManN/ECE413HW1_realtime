@@ -10,8 +10,7 @@ classdef objMIDI
         % Calculated/Read
         fileformat
         num_tracks
-        quarternote_tics                                                    % Tics in quarter note
-        secondsPerQuarterNote                                               % The number of seconds in a quarterNote
+        ppqn                                                                % Pulses per quarter note
         tracks                                                              % Cell Array of Tracks
     end
     
@@ -28,7 +27,7 @@ classdef objMIDI
             obj.scaleType=varargin{2};
             
             fid = fopen(varargin{1});
-            [RAW count] = fread(fid,'uint8');
+            [RAW ~] = fread(fid,'uint8');
             fclose(fid);
 
             parse_int = @(x) hex2dec(reshape(dec2hex(x,2)',1,[]));
@@ -48,9 +47,10 @@ classdef objMIDI
             if (format==0 && num_tracks~=1)
                 error('Invalid number of tracks!');
             end
-            obj.quarternote_tics = parse_int(RAW(13:14))
+            obj.ppqn = parse_int(RAW(13:14))
 
-            % Separate Tracks
+            % Separate and Parse Tracks
+            raw_track = cell(1,obj.num_tracks);
             tptr = 9+header_len;
             for i=1:obj.num_tracks
 
@@ -60,11 +60,14 @@ classdef objMIDI
               tptr = tptr+4;
               track_len = parse_int(RAW(tptr:tptr+3));
               tptr = tptr+4;
-              track_rawbytes{i} = RAW((tptr-8):(tptr+track_len-1));
+              raw_track{i} = RAW((tptr-8):(tptr+track_len-1));
               tptr = tptr+track_len;
             end
             
-            % Read Tracks
+            obj.tracks = cell(1,obj.num_tracks);
+            for i=1:obj.num_tracks
+                obj.tracks{i} = objTrack(raw_track{i},obj.ppqn,obj.scaleType,obj.temperament,obj.key); 
+            end
             
         end
     end
