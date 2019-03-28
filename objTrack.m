@@ -38,7 +38,9 @@ classdef objTrack
             tptr = 9;
             timecurr = 0;
             seconds = 0;
-            currcmd = 0;
+            currcmd = 'FF';
+            notes = containers.Map('KeyType', 'uint32', 'ValueType', 'any');
+            naind = 1;
             while (tptr < length(RAW))
                 [dtime,tptr] = parse_var_len(track, tptr);
                 timecurr = timecurr + dtime;
@@ -64,112 +66,52 @@ classdef objTrack
                         	keylookup = {'B','Gb','Db','Ab','Eb','Bb','F','C','G','D','A','E','B','F#','C#'};
                             obj.key = keylookup{8+mvl2dec(dec2mvl(data(1)),true)};
                             scale = ['major';'minor'];
-                            obj.scaleType = scale(data(2)+1,:)
+                            obj.scaleType = scale(data(2)+1,:);
                     end
                 else 
                 % MIDI EVENTS
 
-                  % check for running mode:
-                    if (track(tptr)<128)
-
-                        % make it re-do last command:
-                        %ctr = ctr - 1;
-                        %track(ctr) = last_byte;
-                        currMsg.used_running_mode = 1;
-
-                        B = last_byte;
-                        nB = track(tptr); % ?
-
-                    else
-
-                        B  = track(tptr);
-                        nB = track(tptr+1);
-
-                        tptr = tptr + 1;
-
+                    if track(tptr)>=128
+                        currcmd = dec2hex(track(tptr))
                     end
 
-                    % nibbles:
-                    %B  = track(ctr);
-                    %nB = track(ctr+1);
-
-
-                    Hn = bitshift(B,-4);
-                    Ln = bitand(B,15);
-
-                    chan = [];
-
-                    msg_type = midi_msg_type(B,nB);
-
-                    % DEBUG:
-                    if (i==2)
-                        if (msgCnt==1)
-                            disp(msg_type);
-                        end
-                    end
-
-
-                    switch msg_type
-
-                        case 'channel_mode'
-
-                            % UNSURE: if all channel mode messages have 2 data byes (?)
-                            type = bitshift(Hn,4) + (nB-120+1);
-                            thedata = track(tptr:tptr+1);
-                            chan = Ln;
-
-                            tptr = tptr + 2;
-
-                        % ---- channel voice messages:
-                        case 'channel_voice'
-
-                            type = bitshift(Hn,4);
-                            len = channel_voice_msg_len(type); % var length data:
-                            thedata = track(tptr:tptr+len-1);
-                            chan = Ln;
-
-                            % DEBUG:
-                            if (i==2)
-                                if (msgCnt==1)
-                                    disp([999  Hn type])
-                                end
+                    switch currcmd(1)
+                        case dec2hex(bin2dec('1001')) %Note On
+                            tptr = tptr + 1;
+                            noteNum = track(tptr);
+                            tptr = tptr + 1;
+                            if notes.isKey(noteNum)
+                                note = notes(noteNum);
+                            else
+                                note.start = seconds
                             end
-
-                            tptr = tptr + len;
-
-                        case 'sysex'
-
-                            % UNSURE: do sysex events (F0-F7) have 
-                            %  variable length 'length' field?
-
-                            [len,tptr] = parse_var_len(track, tptr);
-
-                            type = B;
-                            thedata = track(tptr:tptr+len-1);
-                            chan = [];
-
-                            tptr = tptr + len;
-
-                        case 'sys_realtime'
-
-                            % UNSURE: I think these are all just one byte
-                            type = B;
-                            thedata = [];
-                            chan = [];
-
+                            velocity = track(tptr);
+                            if velocity == 0
+                                obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
+                                naind = naind + 1;
+                            else
+                                note.start = seconds;
+                                note.velocity = velocity;
+                            end
+                            tptr = tptr + 1;
+                        case dec2hex(bin2dec('1000')) %Note off
+                            tptr = tptr + 1;
+                            noteNum = track(tptr);
+                            tptr = tptr + 1;
+                            if notes.isKey(noteNum)
+                                note = notes(noteNum);
+                                obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
+                                naind = naind + 1;
+                            end
+                            tptr = tptr + 1;
+                        otherwise
+                            while track(tptr)<128
+                               tptr = tptr + 1; 
+                            end
                     end
-
-                    last_byte = Ln + bitshift(Hn,4);
-
                 end
-                
-
-
-                midi.track(i).messages(msgCnt) = currMsg;
-                msgCnt = msgCnt + 1;
-
-
             end
+            
         end
     end
 end
