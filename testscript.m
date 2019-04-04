@@ -12,7 +12,7 @@ constants.SamplingRate                 = 44100;                                 
 constants.QueueDuration                = 0.1;                                                    % Seconds - Sets the latency in the objects
 constants.TimePerBuffer                = constants.BufferSize / constants.SamplingRate;          % Seconds;
 
-oscParams                              =confOsc;
+oscParams                              = confOsc;
 oscParams.oscType                      = 'sine';
 oscParams.oscAmpEnv.StartPoint         = 0;
 oscParams.oscAmpEnv.ReleasePoint       = Inf;   % Time to release the note
@@ -21,7 +21,7 @@ oscParams.oscAmpEnv.DecayTime          = .01;  %Decay time in seconds
 oscParams.oscAmpEnv.SustainLevel       = .7;  % Sustain level
 oscParams.oscAmpEnv.ReleaseTime        = .05;  % Time to release from sustain to zero
 
-midiFile                               = 'ROW.mid'
+midiFile                               = 'furelise.mid'
 
 
 % Play the scales

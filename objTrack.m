@@ -72,11 +72,11 @@ classdef objTrack
 
                     if RAW(tptr)>=128
                         currcmd = dec2hex(RAW(tptr));
+                        tptr = tptr + 1;
                     end
 
                     switch currcmd(1)
                         case {dec2hex(bin2dec('1001'))} %Note On
-                            tptr = tptr + 1;
                             noteNum = RAW(tptr);
                             tptr = tptr + 1;
                             velocity = RAW(tptr);
@@ -87,16 +87,17 @@ classdef objTrack
                                 note.velocity = velocity;
                             end
                             if velocity == 0
-                                obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
-                                naind = naind + 1;
-                                notes.remove(noteNum);
+                                if notes.isKey(noteNum)
+                                    obj.arrayNotes(naind) = objNote(noteNum,obj.temperament,obj.key,note.start,seconds,note.velocity/127);
+                                    naind = naind + 1;
+                                    notes.remove(noteNum);
+                                end
                             else
                                 note.velocity = velocity;
                                 notes(noteNum) = note;
                             end
                             tptr = tptr + 1;
                         case {dec2hex(bin2dec('1000'))} %Note off
-                            tptr = tptr + 1;
                             noteNum = RAW(tptr);
                             tptr = tptr + 1;
                             if notes.isKey(noteNum)
@@ -106,17 +107,21 @@ classdef objTrack
                                 notes.remove(noteNum);
                             end
                             tptr = tptr + 1;
-                        case {dec2hex(bin2dec('1010')),dec2hex(bin2dec('1011')),dec2hex(bin2dec('1110'))}
-                            tptr = tptr + 3;
-                        case {dec2hex(bin2dec('1101')),dec2hex(bin2dec('1100'))}
-                            tptr = tptr + 2;
+                        %case {dec2hex(bin2dec('1010')),dec2hex(bin2dec('1011')),dec2hex(bin2dec('1110'))}
+                        %    tptr = tptr + 3;
+                        %case {dec2hex(bin2dec('1101')),dec2hex(bin2dec('1100'))}
+                        %    tptr = tptr + 2;
                         case {dec2hex(bin2dec('1111'))}
-                            tpte = tptr + 1;
-                            while tptr < length(RAW) && RAW(tptr-1) ~= hex2dec('F7')
+                            while tptr < length(RAW) && RAW(tptr) ~= hex2dec('F7')
                                tptr = tptr + 1;
                             end
+                            tptr = tptr + 1;
                         otherwise
-                            error("Nope!");
+%                             error("Nope!");
+                            while tptr < length(RAW) && RAW(tptr) < 128
+                               tptr = tptr + 1;
+                            end
+                            tptr = tptr - 1;
                     end
                 end
             end
