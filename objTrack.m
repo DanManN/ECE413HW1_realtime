@@ -54,8 +54,8 @@ classdef objTrack
                     tptr = tptr + len;
                     switch dec2hex(type)
                         case {'04'} % instrument
-                            synth = {'sine','fm','waveshaping'};
-                            obj.instrument = synth(mod(data(1),3)+1)
+                            synth = {'fm','waveshaping'};
+                            obj.instrument = synth(mod(data(1),2)+1)
                         case {'2F'} % end
                             break
                         case {'51'} % tempo
@@ -107,17 +107,17 @@ classdef objTrack
                                 notes.remove(noteNum);
                             end
                             tptr = tptr + 1;
-                        %case {dec2hex(bin2dec('1010')),dec2hex(bin2dec('1011')),dec2hex(bin2dec('1110'))}
-                        %    tptr = tptr + 3;
-                        %case {dec2hex(bin2dec('1101')),dec2hex(bin2dec('1100'))}
-                        %    tptr = tptr + 2;
+                        case {dec2hex(bin2dec('1010')),dec2hex(bin2dec('1011')),dec2hex(bin2dec('1110'))}
+                            tptr = tptr + 2;
+                        case {dec2hex(bin2dec('1101')),dec2hex(bin2dec('1100'))}
+                            tptr = tptr + 1;
                         case {dec2hex(bin2dec('1111'))}
                             while tptr < length(RAW) && RAW(tptr) ~= hex2dec('F7')
                                tptr = tptr + 1;
                             end
                             tptr = tptr + 1;
                         otherwise
-%                             error("Nope!");
+                            error("Nope!");
                             while tptr < length(RAW) && RAW(tptr) < 128
                                tptr = tptr + 1;
                             end

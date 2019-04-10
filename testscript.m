@@ -13,7 +13,7 @@ constants.QueueDuration                = 0.1;                                   
 constants.TimePerBuffer                = constants.BufferSize / constants.SamplingRate;          % Seconds;
 
 oscParams                              = confOsc;
-oscParams.oscType                      = 'sine';
+oscParams.oscType                      = 'fm';
 oscParams.oscAmpEnv.StartPoint         = 0;
 oscParams.oscAmpEnv.ReleasePoint       = Inf;   % Time to release the note
 oscParams.oscAmpEnv.AttackTime         = .02;  %Attack time in seconds
